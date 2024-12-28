@@ -2,10 +2,10 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
 
-// Register
+// * Register
 exports.register = async (req, res) => {
-  // taking input from req body
-  const { name, email, password} = req.body;
+  //  taking input from req body
+  const { name, email, password } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -17,29 +17,36 @@ exports.register = async (req, res) => {
         message: "User with this email is already registered",
       });
     }
-    //hashing the password
+
+    // ^ hashing the password
     let hashedPassword;
     try {
       hashedPassword = await bcrypt.hash(password, 12);
-    } catch (error) {
+    } catch (hashError) {
       res.status(500).json({
         success: false,
         message: "error while hashing password",
-        error: error,
+        error: hashError.message,
       });
     }
 
     //creating a new user in database
-    const user = await User.create({
+    const user = new User({
       name,
       email,
       password: hashedPassword,
     });
 
-    //sending a success message
+    await user.save();
+
+    //generating jwt token and sending success message
+    const token = jwt.sign({ email }, process.env.JWT_SECRET);
     res.status(201).json({
       success: true,
       message: "Registration successfull",
+      token,
+      username: user.name,
+      userId:user._id
     });
   } catch (error) {
     res.status(400).json({
@@ -50,15 +57,9 @@ exports.register = async (req, res) => {
   }
 };
 
-//Login
+//*Login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  if(!email || !password){
-    return res.status(400).json({
-      success: false,
-      message:"Email and password are required"
-    })
-  }
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -68,37 +69,85 @@ exports.login = async (req, res) => {
       });
     }
 
-    // If user exist then compare password
+    //! If user exist then compare password
     try {
       const isPasswordMatched = await bcrypt.compare(password, user.password);
-      if(!isPasswordMatched){
+      if (!isPasswordMatched) {
         return res.status(401).json({
           success: false,
-          message:"Incorrect password"
-        })
+          message: "Incorrect password",
+        });
       }
 
       //If password match then create jwt token
-      const token = jwt.sign({email}, process.env.JWT_SECRET);
       user.password = undefined;
+      const token = jwt.sign({ email }, process.env.JWT_SECRET);
       return res.status(200).json({
         success: true,
-        message:"Login successful",
+        message: "Login successful",
+        username: user.name,
         token,
-        user,
-      })
+        userId:user._id
+      });
     } catch (error) {
       res.status(500).json({
         success: false,
-        message:"Something went wrong while comparing password"
-      })
-      
+        message: "Something went wrong while comparing password",
+      });
     }
- 
   } catch (error) {
     res.status(500).json({
       success: false,
-      message:"Something went wrong during login"
-    })
+      message: "Something went wrong during login",
+    });
+  }
+};
+
+//*UPDATING USER DETAILS
+exports.updateUser = async (req, res) => {
+  const { name, email, newPassword, password } = req.body;
+  const userId = req.params.id;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+    const updates = {};
+    if (name) updates.name = name;
+    if (email) updates.email = email;
+
+    if (name && email && password) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({
+          message: "Incorrect password",
+        });
+      }
+      (updates.email = email), (updates.name = name);
+    }
+
+    if (password && newPassword) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({
+          message: "Incorrect old password",
+        });
+      }
+
+      // ! Hash the new password
+      updates.password = await bcrypt.hash(newPassword, 12);
+    }
+
+    Object.assign(user, updates);
+    await user.save();
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfullly",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
