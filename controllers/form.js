@@ -108,7 +108,11 @@ exports.getFormsWithNoFolderId = async (req, res) => {
     }
     formsWithNoFolder = await Form.find({ userId, folderId: null });
     if (formsWithNoFolder.length === 0) {
-      return res.status(200);
+      return res.status(200).json({
+        success: true,
+        message: "No forms found for the specified user and folder ID",
+        data: [],
+      });
     }
     res.status(200).json(formsWithNoFolder);
   } catch (error) {
