@@ -7,13 +7,14 @@ const myFolders = new mongoose.Schema({
         unique:true,
         required:[true, "Folder name is required"]
     },
-    user:{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+    userId:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User",
+            required:true,
         },
     createdAt: {
         type: Date,
-        default: Date.now,
+        default: Date.now(),
     },
 })
 module.exports = mongoose.model("Folder", myFolders);

@@ -6,29 +6,33 @@ const {validationRules} = require("../validations/validationRules")
 const {loginValidationRules} = require("../validations/loginValidationRules")
 const {handleValidation} = require("../middlewares/handleValidation")
 const {createFolder, deleteFolder, getAllFolders} = require("../controllers/folder")
-const {createForm, getFormsByFolderId, getFormsWithNoFolderId} = require("../controllers/form")
+const {createForm, getFormsByFolderId, getFormsWithNoFolderId, deleteForm} = require("../controllers/form")
 
 router.post("/register", validationRules, handleValidation, register);
 router.post("/login", loginValidationRules, handleValidation, login)
 router.patch("/setting/:id", updateUser)
 
 // ROUTES FOR CREATING FOLDER
-router.post("/folder", createFolder)
+router.post("/folder/:userId", createFolder);
 
 //ROUTES FOR DELETETING FOLDER
-router.delete("/folder/:id", deleteFolder)
+router.delete("/folder/:id", deleteFolder);
 
 //ROUTES FOR GETTING ALL FOLDERS
-router.get("/folder", getAllFolders)
+router.get("/folder/:userId", getAllFolders);
 
 //ROUTES FOR CREATING FORM
-router.post("/form", createForm)
+router.post("/form/:userId/:folderId", createForm);
 
-//ROUTES FOR GETTING FORM OF A PARTICULAR FOLDER ID
-router.get("/form/:folderId", getFormsByFolderId)
+
+//ROUTES FOR GETTING FORM OF A PARTICULAR FOLDER ID AND USER ID
+router.get("/form/:userId/:folderId", getFormsByFolderId);
 
 //ROUTES FOR GETTING FORM WITH NO FOLDER ID
-router.get("/form", getFormsWithNoFolderId)
+router.get("/form/:userId", getFormsWithNoFolderId)
+
+
+router.delete("/form/:id", deleteForm)
 
 
 module.exports = router;

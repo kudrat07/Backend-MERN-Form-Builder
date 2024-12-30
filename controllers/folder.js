@@ -4,9 +4,7 @@ const Form = require("../models/formSchema")
 // controller for creating a folder
 exports.createFolder = async (req, res) => {
     const { folderName } = req.body;
-
-    
-  
+    const {userId} = req.params;
     try {
       if (!folderName) {
         return res.status(400).json({
@@ -17,7 +15,7 @@ exports.createFolder = async (req, res) => {
 
       const normalizedFolderName = folderName.trim().toLowerCase();
   
-      const folder = await Folder.create({ folderName:normalizedFolderName });
+      const folder = await Folder.create({ folderName:normalizedFolderName, userId});
       res.status(201).json({
         success: true,
         message: "New folder created",
@@ -80,7 +78,8 @@ exports.createFolder = async (req, res) => {
 
   exports.getAllFolders =  async(req, res) => {
     try {
-      const folders = await Folder.find();
+      const {userId} = req.params;
+      const folders = await Folder.find({userId});
       if(!folders) {
        return res.status(200)
       }
