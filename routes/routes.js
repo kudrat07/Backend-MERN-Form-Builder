@@ -1,12 +1,21 @@
 const express = require("express");
 const router = express.Router();
 
-const {register, login, updateUser} = require("../controllers/user")
-const {validationRules} = require("../validations/validationRules")
-const {loginValidationRules} = require("../validations/loginValidationRules")
-const {handleValidation} = require("../middlewares/handleValidation")
-const {createFolder, deleteFolder, getAllFolders} = require("../controllers/folder")
-const {createForm, getFormsByFolderId, getFormsWithNoFolderId, deleteForm} = require("../controllers/form")
+const {register, login, updateUser} = require("../controllers/user");
+
+const {validationRules} = require("../validations/validationRules");
+
+const {loginValidationRules} = require("../validations/loginValidationRules");
+
+const {handleValidation} = require("../middlewares/handleValidation");
+
+const {createFolder, deleteFolder, getAllFolders} = require("../controllers/folder");
+
+const {createForm, getFormsByFolderId, getFormsWithNoFolderId, deleteForm} = require("../controllers/form");
+
+const {createBubble, getBubble} = require("../controllers/bubble")
+
+const {sharePermission, findOwner} = require("../controllers/sharedUser")
 
 router.post("/register", validationRules, handleValidation, register);
 router.post("/login", loginValidationRules, handleValidation, login)
@@ -33,6 +42,16 @@ router.get("/form/:userId", getFormsWithNoFolderId)
 
 
 router.delete("/form/:id", deleteForm)
+
+//ROUTES FOR CREATING BUBBLE
+router.post("/bubble/:formId", createBubble)
+
+//ROUTES FOR GETTING BUBBLE
+router.get("/bubble/:formId", getBubble)
+
+router.post("/shared/user", sharePermission)
+
+router.get("/findOwner/:userId", findOwner)
 
 
 module.exports = router;
