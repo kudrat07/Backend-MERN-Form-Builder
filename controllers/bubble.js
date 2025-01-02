@@ -38,12 +38,12 @@ exports.getBubble = async(req, res) => {
 
         const bubble = await Bubble.find({formId})
         if(bubble.length === 0) {
-            res.status(200).json({
+          return  res.status(200).json({
                 data:[]
             })
         }
 
-        res.status(200).json(bubble)
+       return res.status(200).json(bubble)
     
     } catch (error) {
         console.error(error)
