@@ -28,6 +28,7 @@ exports.createBubble = async(req, res) => {
 
 exports.getBubble = async(req, res) => {
     const {formId} = req.params;
+    console.log(formId)
     try {
         if(!formId) {
             return res.status(400).json({
